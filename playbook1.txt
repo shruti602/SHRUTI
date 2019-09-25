@@ -1,0 +1,9 @@
+---
+- hosts: grp1
+  become: true
+  tasks:
+    - name: coping the scripts
+      copy: src=test.sh dest=/var/tmp/test.sh owner=ansadmin group=ansadmin mode=0775
+
+    - name: executing the script
+      shell: /var/tmp/test.sh
