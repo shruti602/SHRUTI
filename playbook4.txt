@@ -1,0 +1,18 @@
+vi secondplaybook.yml
+
+---
+ - hosts: grp1
+  become: true
+  tasks:
+    - name : create a group
+      group: 
+      name = testgrp
+      state= present
+
+
+   tasks:
+    - name : create user
+      user: 
+      name = testuser
+      group = testuser
+      state= present
