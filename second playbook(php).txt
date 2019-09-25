@@ -1,0 +1,27 @@
+---
+ - hosts: grp1
+   become: true
+   tasks:
+     - name: Check PHP is installed
+       command: php -v
+       register: php_installed
+       ignore_errors:  true
+
+     - name: printing register-output
+       debug: var=php_installed
+
+     - name: php installed
+       debug: msg='php is installed'
+       when: php_installed|success
+
+     - name: php not installed
+       debug: msg='php is not installed'
+       when: php_installed|failed
+
+
+ansible-playbook --syntax-- check firstplaybook.yml: check the syntax
+ansible-playbook firstplaybook.yml --check  : dry run
+ansible-playbook firstplaybook.yml -vvv : e  xecuting the code
+
+
+
