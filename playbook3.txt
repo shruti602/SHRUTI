@@ -1,0 +1,19 @@
+playbook
+
+ vi sampleplaybook.yaml
+
+--- 
+ - hosts: group1
+   become: true
+   tasks:
+       - name: create group testgrp
+         group: name=testgrp state=present
+
+       - name: create testuser
+         user: name=testuser state=present group=testgrp
+
+
+
+ansible-playbook --syntax-check sampleplaybook.yaml   ---  check the syntax
+ansible-playbook sampleplaybook.yaml --check               ---  dry run 
+ansible-playbook sampleplaybook.yaml                           ---   executing the code
