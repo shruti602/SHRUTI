@@ -1,0 +1,151 @@
+mkdir loginclienttoolproject
+
+cd loginclienttoolproject
+
+mkdir group_vars
+        
+vi all
+
+Loginservername: vip-li-frk.company.com 
+when: location==frk
+				
+loginservername: vip-li-vie.company.com 
+when: location==vie
+
+ostype: deb when: ansible_distribution == "Debian"
+				
+ostype: rpm when: ansible_distirbution == "RedHat" or ansible_distribution == "OEL"
+
+touch FRK VIE
+
+
+vi FRK
+
+[frkgrp]
+
+s1
+
+s2
+
+s3
+
+
+[frkgrp:vars]
+
+location=frk
+
+
+vi VIE
+
+[viegrp]
+
+s4
+
+s5
+
+s6
+
+[viegrp:vars]
+
+ 
+
+mkdir roles
+
+cd roles
+
+ansible-galaxy init logclientrole
+
+
+logclientrole
+	vars
+	  
+vi main.yaml
+	    
+ ---
+
+files
+
+loginsigh-1.2.3.rpm
+		
+loginsigh-1.2.3.deb
+
+templates
+	   
+liagent.ini.j2
+	     
+hostname={{loginservername}}
+		  
+auto_update=yes
+		 
+package_type={{ostype}}
+
+tasks
+	    
+vi main.yaml
+           
+- name: install login client package_type
+			    
+ yum: name=loginsigh-1.2.3.rpm state=present 
+				
+ when: ansible_distirbution == "RedHat" or ansible_distribution == "OEL"
+				
+ register: Install_log_rpm
+				 
+			   
+
+ - name: install login client package_type
+			     
+ dpkg: name=loginsigh-1.2.3.deb state=present 
+				
+ when: ansible_distirbution == "Debian"
+				 
+ register: Install_log_deb
+				  
+				
+
+ - name: starting login service
+				  
+ service: name=liagentd start=started enabled=yes
+				   
+when: Install_log_deb|succees or Install_log_rpm|success
+				   
+				
+
+ - name: updating the configuration files
+				   
+template: src=liagent.ini.j2 dest=/var/lib/loginsight-agent/liagent.ini
+				  
+ notify:
+				    
+ - restart_loginagent
+					 
+		
+ handlers
+		   
+vi main.yaml
+		   
+ ---
+			
+ - name: restart_loginagent
+			   
+service: name=liagentd start=restarted
+
+
+
+vi liagent.yaml
+
+---
+ - hosts: all
+  
+ become: true
+   
+role:
+     
+- logclientrole
+	 
+
+	
+
+		
+	
+ansible-playbook -i frk liagent.yaml

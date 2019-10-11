@@ -1,0 +1,80 @@
+mkdir loginclienttoolproject
+
+cd loginclienttoolproject
+
+mkdir group_vars
+        
+vi all
+
+Loginservername: vip-li-frk.company.com 
+when: location==frk
+				
+loginservername: vip-li-vie.company.com 
+when: location==vie
+
+ostype: deb when: ansible_distribution == "Debian"
+				
+ostype: rpm when: ansible_distirbution == "RedHat" or ansible_distribution == "OEL"
+
+touch FRK VIE
+
+
+vi FRK
+
+[frkgrp]
+
+s1
+
+s2
+
+s3
+
+
+[frkgrp:vars]
+
+location=frk
+
+
+vi VIE
+
+[viegrp]
+
+s4
+
+s5
+
+s6
+
+[viegrp:vars]
+
+ 
+
+mkdir roles
+
+cd roles
+
+ansible-galaxy init logclientrole
+
+
+logclientrole
+	vars
+	  
+vi main.yaml
+	    
+ ---
+
+files
+
+loginsigh-1.2.3.rpm
+		
+loginsigh-1.2.3.deb
+
+templates
+	   
+	liagent.ini.j2
+	     
+ hostname={{loginservername}}
+		  
+auto_update=yes
+		 
+ package_type={{ostype}}

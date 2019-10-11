@@ -1,0 +1,223 @@
+- name: start httpd
+ service: name=httpd state=started
+register: httpstatus
+changed_when: 'running' is present in httpstatus.output
+
+
+
+
+- name: checking the user is present
+ shell: grep -i root /etc/passwd
+ changed_when: 'o:root' is present in httpstatus.output
+
+
+- name: Creating a user
+  user: name=root state=present
+  when: httpstatus.output !rc=0
+
+
+- name: checking the user is present
+ shell: grep -i "http_port=80" /etc/httpd/conf/http.conf
+ failed_when: 'failed' is present in httpstatus.output
+
+
+
+- name: checking the user is present
+ shell: grep -i "http_port=80" /etc/httpd/conf/http.conf
+ failed_when: 'failed' is present in httpstatus.output
+
+
+- name: adding the httpd port
+  lineinfile: dest=/etc/httpd/conf/httpd.conf state=present regexp="^LIsten" line="Listen 8080"
+  when: httpstatus.output ! rc=1
+  notify:
+  -restartr_httpd
+
+
+
+- name: wait until the lock file is removed
+  wait_for :
+  path: /var/lock/db.lockstate: present delay: 10 timeout: 300
+
+without condition
+
+9343751613
+
+09448706205
+
+github/ansible examples
+
+v 
+
+
+- name wait for 1o0 min
+  pause: minutes= 10
+
+
+vi variables.yaml
+ user :
+  username: testuser
+  usergroup: testgroup
+  userhome: /home/testuser
+
+vi variables.yaml
+
+----
+
+ -hosts: grp1
+  become: true
+  including_vars: variables.yaml
+  tasks:
+  -name: creating group
+   group: name={{item.user.usergroup}] sttae=present
+
+   
+  -name: creating group
+   group: name={{item.user.username}] group={{item.user.usergroup}} home={{item.user.userhome}}
+
+
+
+vi sampleplaybook.yaml
+---
+-hosts:grp1
+ become= true
+ tasks:
+ -name: creating group
+  group: name={{item.groups}} sttae=present
+  with_itmes:
+  groups:
+   -testgrp1
+   -testgrp2
+   -testgrp3
+
+
+-name: creating user
+ user: name={{item.0}} group={{item.1}} home={{item.3}}
+ with_items:
+      -[testuser1, testgrp1, /home/testuser1]
+      -[testuser2,testgrp2, /home/testuser2]
+       -[user: testuser1, group: testgrp1,homedir1: /home/testuser1]
+      -[user: testuser2, group: testgrp2,homedir2: /home/testuser2]]
+
+
+
+
+
+
+
+
+ user :
+  username: testuser
+  usergroup: testgroup
+  userhome: /home/testuser
+
+
+projet with roles
+
+mkdir tomcatproject
+
+tomcatproject
+
+   mkdir roles
+   mkdir group_vars
+         touch all
+         touch grp1
+         touch grp2
+
+touch tomcatplaybook.yaml
+touch hosts
+
+
+     tomcatproject
+          roles
+             tomcatrole
+          group_vars
+            all
+
+               a=1
+
+          grp1
+           b=2
+
+          grp2
+           a=6
+
+     tomcatplaybook.yaml
+
+     hosts
+     [grp1]
+
+
+
+
+
+
+example
+
+
+liagentproject
+    roles
+      liagentrole
+         vars
+         files
+            Loginsight-1.2.3.deb
+            Loginsight-1.2.3.rpm
+         templates
+            liagent.ini.j2
+                auto_update={{value}}
+                package_type={{ostype}}
+                servername = {{LoginServer}}
+              
+          tasks
+            vi main.yaml
+
+            ---
+            - name: installing login agent
+              yum:  [name=Loginnsight-1.2.3.rpm state=present
+              when:  ansible_distribution == "Redhat" and ansible_distribution_major_version =='7' or hen: ansible
+            - name: installing login agent
+              yum:  [name=Loginnsight-1.2.3.deb state=present
+              when:  ansible_distribution == "Debian" and ansible_distribution_major_version =='7' 
+
+           - name: starting login agent service
+             service: name
+
+              
+
+           
+          handlers
+    group_vars
+     all
+     servers
+
+
+   liagent.yaml
+
+    ---
+    hotsts=all
+     become=true
+     roles:
+       -ligentroles
+   FRK
+   [server]
+
+    vip-li-frk
+    [server:vars]
+    Loginserver=vip-li.frk.company.com
+
+   VIE
+  [server]
+   vip-li-vie
+
+   [server:vars]
+   Loginserver=vip-li.vie.company.com
+
+
+ansible-playook -i FRK ligament.yaml
+
+
+
+
+yum: name ={{pkgname}}-{{version}}.rpm
+
+ 

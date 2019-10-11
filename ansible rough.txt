@@ -1,0 +1,430 @@
+vi new.yml(10th)
+
+--- 
+- hosts: grp1
+  become: true
+  tasks:
+    - name: installing packages
+      yum: name=httpd state=present
+      register: Installation_log
+
+    - name: starting the service
+      service: mame=httpd enabled=yes state=started
+      when: Installation_log|success
+
+
+
+
+---
+ - hosts: grp1
+
+   tasks:
+     - name: installation of httpd package
+       yum: name=httpd state=present
+       register: http_install
+
+
+     - name: starting httpd service
+       service: name=httpd state=started enabled=yes
+       when: http_validation|success and http_install|success
+
+
+
+
+
+vi tenthbook.yml
+---
+ - hosts: local
+
+   tasks:
+     - name: installation of httpd package
+       yum: name=httpd state=present
+       
+
+     - name: starting httpd service
+       service: name=httpd enabled=yes state=started
+
+
+
+vi eleventhbook.yml
+ 
+--- 
+- hosts: grp1
+  become: true
+  tasks:
+    - name: installing packages
+      yum: name={{item}} state=present
+      with_items:
+         - httpd
+         - screen
+         - java
+      register: Installation_log
+ 
+    - name: starting the service
+      service: mame={{item}} enabled=yes state=started
+      with_items:
+          - httpd
+         - screen
+      when: Installation_log|success
+
+
+vi twelvethbook.yml
+--- 
+- hosts: grp1
+  become: true
+  vars:
+   pkg:
+     - java
+     - screen
+     - httpd
+   service: httpd
+  tasks:
+    - name: installing packages
+      yum: name={{item}} state=present
+      with_items:
+         - "{{ pkg }}"
+      register: Installation_log
+ 
+    - name: starting the service
+      service: mame={{item}} enabled=yes state=started
+      with_items:
+          - "{{ service }}"
+         
+      when: Installation_log|success
+
+
+vi thirteenplaybook.yml
+
+--- 
+- hosts: grp1
+  become: true
+  vars:
+   pkg:
+     - java
+     - screen
+     - httpd
+   service: httpd
+  tasks:
+    - name: installing packages
+      yum: name="{{item}}" state=present
+      with_items:
+         -"{{ pkg }}"
+      register: Installation_log
+ 
+    - name: starting the service
+      service: mame={{ item }} enabled=yes state=started
+      with_items:
+          - "{{service}}"
+         
+      when: Installation_log|success
+
+
+vi httpvar.yml
+
+--- 
+- hosts: grp1
+  become: true
+  vars:
+   pkg:
+     - java
+     - screen
+     - httpd
+   service: httpd
+  tasks:
+    - name: installing packages
+      yum: name={{item}} state=present
+      with_items:
+         -{{ pkg }}
+      register: Installation_log
+ 
+    - name: starting the service
+      service: mame={{ item }} enabled=yes state=started
+      with_items:
+          - {{service}}
+         
+      when: Installation_log|success
+
+
+
+
+vi fourthplaybook.yaml
+
+ ---
+   - hosts: {{GroupFile}}
+     become: true
+     var_files:
+       -httpvar.yaml
+
+   tasks:
+    - name: installing packages
+      yum: name= "{{item}}" state=present
+      with_items:
+         - "{{ pkg }}"
+      register: Installation_log
+ 
+    - name: starting the service
+      service: mame= "{{ item }}" enabled=yes state=started
+      with_items:
+          - "{{ service }}"
+         
+      when: Installation_log|success
+
+
+
+
+ansible-playbook fourthplaybook.yaml -e '{"FileName" : nonprod.yaml}" -e {"GroupFile": nonprod)'
+
+
+
+vi fifththplaybook.yaml
+
+ ---
+   - hosts: grp1
+     become: true
+     var_files:
+       - httpvar.yaml
+
+   tasks:
+    - name: installing packages
+      yum: name= "{{item}}" state=present
+      with_items:
+         - "{{ pkg }}"
+      notify: 
+        - starting_httpd_service
+ 
+
+   handlers
+ 
+    - name: starting the service
+      service: mame= "{{ item }}" enabled=yes state=started
+      with_items:
+          - "{{ service }}"
+         
+      when: Installation_log|success
+
+
+
+
+vi sixthplaybook.yaml
+
+ ---
+   - hosts: grp1
+     become: true
+     
+
+   tasks:
+    - name: including variables tasks
+      include_vars: httpvar.yaml
+     - name : installing packages
+      yum: name= "{{item}}" state=present
+      with_items:
+         - "{{ pkg }}"
+      notify: 
+        - starting_httpd_service
+ 
+
+   handlers
+ 
+    - name: starting the service
+      service: mame= "{{ item }}" enabled=yes state=started
+      with_items:
+          - "{{ service }}"
+         
+      when: Installation_log|success
+
+
+
+vi seventhplaybook.yaml
+
+ ---
+   - hosts: grp1
+     become: true
+     
+
+   tasks:
+    - name: including variables tasks
+      set_fact :
+        pkg:
+          -java
+          -httpd
+          -screen
+       service : httpd
+
+     - name : installing packages
+      yum: name= "{{item}}" state=present
+      with_items:
+         - "{{ pkg }}"
+      notify: 
+        - starting_httpd_service
+ 
+
+   handlers
+ 
+    - name: starting the service
+      service: mame= "{{ item }}" enabled=yes state=started
+      with_items:
+          - "{{ service }}"
+         
+      when: Installation_log|success
+
+
+vi eighthplaybook.yaml
+
+ ---
+   - hosts: grp1
+     become: true
+     
+
+   tasks:
+    - name: including variables tasks
+      set_fact :
+        pkg: httpd
+      service : httpd
+      when : ansible_ois_family == "Redhat" and ansible_distribution_major_version == "7"
+     name: including variables tasks
+      set_fact :
+        pkg: apache2
+      service : apache2
+      when : ansible_ois_family == "centos" and ansible_distribution_major_version == "7"
+
+
+     - name : installing packages
+      yum: name= "{{item}}" state=present
+      with_items:
+         - "{{ pkg }}"
+      notify: 
+        - starting_httpd_service
+ 
+
+   handlers
+ 
+    - name: starting the service
+      service: mame= "{{ item }}" enabled=yes state=started
+      with_items:
+          - "{{ service }}"
+         
+      when: Installation_log|success
+
+
+ansible grp1 -m setup|grep -1 ansible
+
+
+ansible set facts module (google)
+
+
+vi tenthbook.yml
+---
+ - hosts: local
+
+   tasks:
+     - name: installation of httpd package
+       yum: name=httpd state=present
+       register: http_install
+
+     - name: validation of httpd
+       command: ls -al /sbin/httpd
+       register: http_validation
+
+     - name: starting httpd service
+       service: name=httpd state=started enabled=yes
+       when: http_validation|success and http_install|success
+
+
+© 2019 GitHub, Inc.
+
+
+- copy: src=test.sh dest=/var/tmp/test.sh owner=root group=sys
+- shell:/var/tmp/test.sh
+
+
+ansible-playbook --syntax-- check firstplaybook.yml  : check the syntax    
+
+ansible-playbook firstplaybook.yml --check  : dry run
+ansible-playbook firstplaybook.yml -vvv : e  xecuting the code
+
+ansible-playbook --syntax-check new.yml   ---  check the syntax
+ansible-playbook sampleplaybook.yaml --check               ---  dry run 
+ansible-playbook sampleplaybook.yaml -vvv                          ---   executing the code
+
+ansible-playbook --syntax-check thridplaybook.yml
+ansible-playbook thridplaybook.yml  --check 
+ansible-playbook  thridplaybook.yml
+
+
+
+ansible-playbook --syntax-check thridplaybook.yml
+
+vi secondplaybook.yml
+
+---
+ - hosts: grp1
+  become: true
+  tasks:
+    - name : create a group
+      group: 
+      name = testgrp
+      state= present
+
+
+   tasks:
+    - name : create user
+      user: 
+      name = testuser
+      group = testuser
+      state= present
+
+
+ansible-playbook firstplaybook.yml --check
+
+3 packages
+install
+sucsses (print seuccess)
+call servcie and start the service
+
+fail
+then print
+
+
+package 
+debug
+sercvice module
+
+ansible-playbook fifthplaybook.yml --check
+
+ansible-playbook fifthplaybook.yml  --check
+
+find -n test.sh
+
+
+su - ansadmin
+
+https://github.com/ansible/ansible-examples/tree/master/lamp_sim
+
+vi tenthplaybook.yml
+
+
+
+    everythingshouldbevirtaul.com
+    
+
+vi eightplaybook.yaml
+----
+ -hots: grp1
+  become: true
+  tasks:
+   -name: gathering package version
+    command: rpm -qa java-*|cut -d "-" -f2|uniq
+     register: java_version
+
+-name: debug output
+ debug: var_java_version.output
+
+-name: setting the fact value
+ set_facts:
+    javaInstVer: java_version.output
+
+-name: validate and upgratde java package
+ yum: name=java-1.8.* state=present
+  when: javaInstVer == 1.7.0 or JavaInstVer ==1.7.*
+
+
